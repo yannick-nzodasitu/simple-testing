@@ -1,10 +1,17 @@
 package com.cgi;
 
-
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,78 +19,86 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class WalletTest {
 
-    private Wallet walletWith100Dollars;
     private Wallet emptyWallet;
+    private Wallet walletWith100Dollars;
 
     @BeforeAll
     static void beforeAllTest() {
-        System.out.println("this method should run before all the tests");
+        System.out.println("This method should run before all the tests");
     }
 
     @BeforeEach
     void setUp() {
-        System.out.println("this method should run before all the tests");
+        System.out.println("Creating some wallets for testing");
         emptyWallet = new Wallet();
         walletWith100Dollars = new Wallet();
         walletWith100Dollars.deposit(100);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @AfterEach
     void tearDown() {
         emptyWallet = null;
+        System.out.printf("Destroying Wallets for testing, here is the proof: %s%n", emptyWallet);
+    }
+
+    @AfterAll
+    static void afterAllTests() {
+        System.out.println("This method should run after all the tests");
+    }
+
+    @Test
+    public void testWalletDeposited1000() {
+        emptyWallet.deposit(1000);
+        assertThat(emptyWallet.getBalance()).isEqualTo(1000);
     }
 
     @Test
     public void testWalletShouldHaveZeroToBegin() {
-        Wallet wallet = new Wallet();
-        assertThat(wallet.getBalance()).isZero();
+        //empty
+        assertThat(emptyWallet.getBalance()).isZero();
     }
 
     @Test
     public void testWalletDepositOf1BalanceIs1() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(1);
-        assertThat(wallet.getBalance()).isOne();
+        emptyWallet.deposit(1);
+        assertThat(emptyWallet.getBalance()).isOne();
     }
 
     @Test
+    @DisplayName("If a deposit of one and withdrawal of the same amount the result should be 0")
     public void testWalletWithDepositOf1AndWithdrawalOf1() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(1);
-        wallet.withdrawal(1);
-        assertThat(wallet.getBalance()).isZero();
+        emptyWallet.deposit(1);
+        emptyWallet.withdrawal(1);
+        assertThat(emptyWallet.getBalance()).isZero();
     }
 
     @Test
     public void testWalletWithTransferOf1() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(1);
-        assertThat(wallet.getBalance()).isGreaterThan(0);
-        wallet.withdrawal(1);
-        assertThat(wallet.getBalance()).isZero();
+        emptyWallet.deposit(1);
+        assertThat(emptyWallet.getBalance()).isGreaterThan(0);
+        emptyWallet.withdrawal(1);
+        assertThat(emptyWallet.getBalance()).isZero();
     }
 
     @Test
     public void depositMoreThanMaxInteger() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(Integer.MAX_VALUE);
-        assertThatThrownBy(() -> wallet.deposit(1))
+        emptyWallet.deposit(Integer.MAX_VALUE);
+        assertThatThrownBy(() -> emptyWallet.deposit(1))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void depositMoreThanMaxIntegerWithAComputationThatWouldExceedMaxValue() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(Integer.MAX_VALUE - 10);
-        assertThatThrownBy(() -> wallet.deposit(20))
+        emptyWallet.deposit(Integer.MAX_VALUE - 10);
+        assertThatThrownBy(() -> emptyWallet.deposit(20))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
 
     @Test
     public void testAnEmptyWalletShouldNotAllowWithdrawals() {
-        Wallet wallet = new Wallet();
-        assertThatThrownBy(() -> wallet.withdrawal(20))
+        assertThatThrownBy(() -> emptyWallet.withdrawal(20))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("The result will end up negative try again");
     }
@@ -91,40 +106,55 @@ public class WalletTest {
 
     @Test
     public void testAWalletShouldNotAcceptANegativeWithdrawal() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(50);
-        assertThatThrownBy(() -> wallet.withdrawal(-20))
+        emptyWallet.deposit(50);
+        assertThatThrownBy(() -> emptyWallet.withdrawal(-20))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("You cannot withdrawal a negative value");
     }
 
     @Test
     public void testWalletDepositShouldIncreaseBalance() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(5);
-        assertThat(wallet.getBalance()).isPositive();
+        emptyWallet.deposit(5);
+        assertThat(emptyWallet.getBalance()).isPositive();
     }
 
     @Test
     public void testWalletDepositShouldBeWithPositiveAmount() {
-        Wallet wallet = new Wallet();
-        assertThatThrownBy(() -> wallet.deposit(-5)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> emptyWallet.deposit(-5)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     public void testWalletAlreadyHas10DepositAndWeWithdrawalMore() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(10);
-        assertThatThrownBy(() -> wallet.deposit(-20))
+        emptyWallet.deposit(10);
+        assertThatThrownBy(() -> emptyWallet.deposit(-20))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
+    @Disabled(value = "This test is critical it did not run, please check")
     public void testThatAfterDepositingOneTimeThatTheSecondTimeRuns() {
-        Wallet wallet = new Wallet();
-        wallet.deposit(10);
-        wallet.deposit(0);
-        assertThat(wallet.getBalance()).isEqualTo(40);
+        emptyWallet.deposit(10);
+        emptyWallet.deposit(30);
+        assertThat(emptyWallet.getBalance()).isEqualTo(40);
+    }
+
+
+    public static Stream<Arguments> accountDataProvider() {
+        return Stream.of(
+                Arguments.of(100, 50, 50),
+                Arguments.of(1, 1, 0),
+                Arguments.of(2, 1, 1),
+                Arguments.of(1, 0, 1),
+                Arguments.of(2, 0, 2)
+        );
+    }
+
+    @ParameterizedTest(name = "{index}: deposit = {0}, withdrawal = {1}, balance = {2}")
+    @MethodSource("accountDataProvider")
+    public void testDepositsWithdrawalsAndBalances(int deposit, int withdrawal, int balance) {
+        emptyWallet.deposit(deposit);
+        emptyWallet.withdrawal(withdrawal);
+        assertThat(emptyWallet.getBalance()).isEqualTo(balance);
     }
 
 
@@ -134,7 +164,7 @@ public class WalletTest {
     //  Scenario:
     //     That a deposit will increase the balance
     //  Scenario:
-    //     If a deposit of one and withdrawal the result should be 0
+    //     If a deposit of one and withdrawal of the same amount the result should be 0
     //  Scenario:
     //     Given a wallet
     //     When a deposit of a negative value is made
