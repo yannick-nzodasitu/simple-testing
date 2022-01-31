@@ -131,7 +131,6 @@ public class WalletTest {
     }
 
     @Test
-    @Disabled(value = "This test is critical it did not run, please check")
     public void testThatAfterDepositingOneTimeThatTheSecondTimeRuns() {
         emptyWallet.deposit(10);
         emptyWallet.deposit(30);
